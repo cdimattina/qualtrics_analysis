@@ -1,5 +1,34 @@
 import pandas as pd
+import numpy as np
+import sys
 
+csv_file            = sys.argv[1]
+
+df                  = pd.read_csv(csv_file)
+confusion_matrix    = np.zeros(shape=(3,3),dtype=int)
+
+for (index, colname) in enumerate(df):
+    if(index>0):
+        if index <= 50:
+            true_row = 0
+        elif(index > 50 and index <= 100):
+            true_row = 1
+        else:
+            true_row = 2
+
+        num_edge = list(df[colname].values).count('Occlusion')
+        num_shad = list(df[colname].values).count('Shadow')
+        num_text = list(df[colname].values).count('Texture')
+
+        confusion_matrix[true_row, 0] +=  num_edge
+        confusion_matrix[true_row, 1] +=  num_shad
+        confusion_matrix[true_row, 2] +=  num_text
+
+
+print(confusion_matrix)
+
+
+"""
 def calculate_confusion_matrix(csv_file):
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_file)
@@ -33,11 +62,13 @@ def calculate_confusion_matrix(csv_file):
     return confusion_matrix_percent, percent_correct
 
 # Example usage:
-confusion_matrix, percent_correct = calculate_confusion_matrix('classification_results.csv')
+confusion_matrix, percent_correct = calculate_confusion_matrix('classification_results_train_1.csv')
 print("Confusion Matrix:")
 print(confusion_matrix)
 print("\nPercent Correct:")
 print(percent_correct)
 
 # Note to Self: Find list of correct answers for "stimulus_category"
-# Update the file path in the function call calculate_confusion_matrix('classification_results.csv') to point to the CSV file containing classification results.
+# Update the file path in the function call calculate_confusion_matrix('classification_results_train_1.csv') to point to the CSV file containing classification results.
+"""
+
