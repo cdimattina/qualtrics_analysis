@@ -10,7 +10,7 @@ confusion_matrix_train.py  |	This program takes as input a cleaned Qualtrics .cs
 			   |    categories (occlusion, shadow, texture), and outputs
 			   |    a .csv file containing a confusion matrix.
 --------------------------------------------------------------------------------------			   
-csv_file_conversion.py	   | 	This program sets up a .csv file for each of the 
+setup_test_exp.py	   | 	This program sets up a .csv file for each of the 
 			   |	surveys, which is then updated by analyze_test_exp.py			   
 --------------------------------------------------------------------------------------
    		           |	This program takes a cleaned Qualtrics .csv file and 
