@@ -13,7 +13,7 @@ def calculate_confusion_matrix(csv_file):
     # Loop through each row in the DataFrame
     for index, row in df.iterrows():
         stimulus_category = row['Stimulus Category']
-        observer_classification = row['Observer Classification']
+        observer_classification = row['Does this image patch contain an occlusion edge (boundary between two different surfaces), a shadow edge (change in illumination on a single surface), or a uniform texture (single surface)?']
         
         # Update counts
         counts[stimulus_category][observer_classification] += 1
@@ -39,5 +39,5 @@ print(confusion_matrix)
 print("\nPercent Correct:")
 print(percent_correct)
 
-# Ensure that the CSV file contains columns for "Stimulus Category" and "Observer Classification".
-# Update the file path in the function call calculate_confusion_matrix('classification_results.csv') to point to your CSV file containing the classification results.
+# Note to Self: Find list of correct answers for "stimulus_category"
+# Update the file path in the function call calculate_confusion_matrix('classification_results.csv') to point to the CSV file containing classification results.
