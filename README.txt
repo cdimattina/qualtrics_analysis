@@ -19,7 +19,8 @@ confusion_matrix_train.py  |	This program takes as input a cleaned Qualtrics .cs
 			   |	
 			   |	input  : <file> = classification_results_train_<1,2>.csv
 			   |	
---------------------------------------------------------------------------------------			  setup_test_exp.py	   | 	This program sets up a .csv file for each of the 
+--------------------------------------------------------------------------------------			  
+setup_test_exp.py	   | 	This program sets up a .csv file for each of the 
 			   |	test surveys, which is then updated by tabulate_test_survey.py
 			   |	to include the number of responses for each category
 			   |	from each of the participants
