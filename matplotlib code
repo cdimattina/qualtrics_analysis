@@ -1,0 +1,76 @@
+import os
+import re
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from PIL import Image
+
+# Path to the folder containing images
+folder_path = "/home/cplab4/Downloads/SurveyImages/survey1_10_8"
+
+# Function to extract lm, tp, and tm values from the image file name
+def extract_values(filename):
+    match = re.search(r'lm_(\d+\.\d+)_tp_(\d+\.\d+)_tm_(\d+\.\d+)', filename)
+    lm = float(match.group(1))
+    tp = float(match.group(2))
+    tm = float(match.group(3))
+    return lm, tp, tm, filename
+
+# Get list of image files in the folder
+image_files = os.listdir(folder_path)
+
+# Sort images based on lm values
+image_files.sort(key=lambda x: extract_values(x)[0])
+
+# Initialize sub-arrays for different lm values
+lm_0 = []
+lm_025 = []
+lm_05 = []
+lm_1 = []
+
+# Sort images into sub-arrays based on lm values
+for filename in image_files:
+    lm, tp, tm, img_filename = extract_values(filename)
+    if lm == 0:
+        lm_0.append((tp, tm, img_filename))
+    elif lm == 0.25:
+        lm_025.append((tp, tm, img_filename))
+    elif lm == 0.5:
+        lm_05.append((tp, tm, img_filename))
+    elif lm == 1:
+        lm_1.append((tp, tm, img_filename))
+
+# Function to plot sub-array with images
+def plot_subarray(ax, subarray, lm_value):
+    tp_values, tm_values, img_filenames = zip(*subarray)
+    for tp, tm, img_filename in zip(tp_values, tm_values, img_filenames):
+        img_path = os.path.join(folder_path, img_filename)
+        img = Image.open(img_path).convert('L')  # Open image and convert to grayscale
+        img = np.array(img)  # Convert PIL Image to numpy array
+        imagebox = OffsetImage(img, zoom=0.50, cmap='gray')  # Adjust zoom and set grayscale colormap
+        ab = AnnotationBbox(imagebox, (tp, tm), frameon=False)
+        ax.add_artist(ab)
+    ax.set_title(f"lm={lm_value}", pad=40)
+    ax.set_xlabel('tp', labelpad=10)
+    ax.set_ylabel('tm', labelpad=10)
+    ax.set_xticks([0, 0.25, 0.5, 1])
+    ax.set_yticks([0, 0.5, 0.75, 1])
+    ax.tick_params(axis='x', which='major', pad=25)  # Adjust padding of ticks on x-axis
+    ax.tick_params(axis='y', which='major', pad=25)  # Adjust padding of ticks on y-axis
+
+# Create subplots
+fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+
+# Plot sub-arrays with images
+plot_subarray(axs[0, 0], lm_0, 0)
+plot_subarray(axs[0, 1], lm_025, 0.25)
+plot_subarray(axs[1, 0], lm_05, 0.5)
+plot_subarray(axs[1, 1], lm_1, 1)
+
+# Adjust layout to add space between subplots
+plt.subplots_adjust(wspace=0.75, hspace=0.75)
+
+# Set global title
+plt.suptitle('Survey1_10_8')
+
+plt.show()
