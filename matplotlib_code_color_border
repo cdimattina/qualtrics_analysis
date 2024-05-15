@@ -1,28 +1,44 @@
 import os
 import re
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from PIL import Image
-import pandas as pd
 
 # Path to the folder containing images
 folder_path = "/home/cplab4/Downloads/SurveyImages/survey1_10_8"
-csv_file_path = "/home/cplab4/Downloads/qt_survey_1_tab_sp.csv"
+csv_path = "/home/cplab4/Downloads/qt_survey_1_tab_sp.csv"
 
-# Read CSV file into a DataFrame
-csv_data = pd.read_csv(csv_file_path, delimiter=',')
 
-# Print out DataFrame to verify its contents
-print(csv_data.head(10))
-
-# Function to extract lm, tp, and tm values from the image file name
+# Function to extract lm, tp, tm, and num values from the image file name
 def extract_values(filename):
     match = re.search(r'lm_(\d+\.\d+)_tp_(\d+\.\d+)_tm_(\d+\.\d+)', filename)
-    lm = float(match.group(1))
-    tp = float(match.group(2))
-    tm = float(match.group(3))
-    return lm, tp, tm, filename
+    if match:
+        lm = float(match.group(1))
+        tp = float(match.group(2))
+        tm = float(match.group(3))
+        num_match = re.search(r'_num_(\d+)_', filename)
+        if num_match:
+            num = int(num_match.group(1))
+        else:
+            raise ValueError(f"Filename {filename} does not have 'num' value.")
+        return lm, tp, tm, num, filename
+    else:
+        raise ValueError(f"Filename {filename} does not match.")
+
+
+# Read CSV file and store data in a dictionary
+csv_data = {}
+with open(csv_path, newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        im = int(row['im'])
+        ne = float(row['ne'])
+        ns = float(row['ns'])
+        nt = float(row['nt'])
+        csv_data[im] = (ne, ns, nt)
 
 # Get list of image files in the folder
 image_files = os.listdir(folder_path)
@@ -31,72 +47,88 @@ image_files = os.listdir(folder_path)
 image_files.sort(key=lambda x: extract_values(x)[0])
 
 # Initialize sub-arrays for different lm values
-lm_0 = []
-lm_025 = []
-lm_05 = []
-lm_1 = []
+sub_arrays = {0: [], 0.25: [], 0.5: [], 1: []}
 
 # Sort images into sub-arrays based on lm values
 for filename in image_files:
-    lm, tp, tm, img_filename = extract_values(filename)
-    if lm == 0:
-        lm_0.append((tp, tm, img_filename))
-    elif lm == 0.25:
-        lm_025.append((tp, tm, img_filename))
-    elif lm == 0.5:
-        lm_05.append((tp, tm, img_filename))
-    elif lm == 1:
-        lm_1.append((tp, tm, img_filename))
+    lm, tp, tm, num, img_filename = extract_values(filename)
+    if lm in sub_arrays:
+        sub_arrays[lm].append((tp, tm, num, img_filename))
+
 
 # Function to plot sub-array with images
 def plot_subarray(ax, subarray, lm_value):
-    tp_values, tm_values, img_filenames = zip(*subarray)
-    for tp, tm, img_filename in zip(tp_values, tm_values, img_filenames):
+    tp_values, tm_values, num_values, img_filenames = zip(*subarray)
+    for tp, tm, num, img_filename in zip(tp_values, tm_values, num_values, img_filenames):
         img_path = os.path.join(folder_path, img_filename)
         img = Image.open(img_path).convert('L')  # Open image and convert to grayscale
         img = np.array(img)  # Convert PIL Image to numpy array
-        imagebox = OffsetImage(img, zoom=0.3, cmap='gray')  # Adjust zoom and set grayscale colormap
+        imagebox = OffsetImage(img, zoom=0.35, cmap='gray')  # Adjust zoom and set grayscale colormap
 
-        try:
-            # Find the row in the CSV data that matches the lm, sp, and tm values
-            csv_row = csv_data[(csv_data['lm'] == lm_value) & (csv_data['sp'] == 1 - tp) & (csv_data['tm'] == tm)]
-            ne, ns, nt = csv_row[['ne', 'ns', 'nt']].values[0]
+        # Adjust tp and tm to ensure the image is within the graph boundaries and inside all of the lines
+        sp = 1 - tp
+        if sp == 1:
+            sp = sp - 0.25
+        if tm == 0:
+            tm = tm
+        else:
+            tm = tm - 0.25
 
-            # Calculate RGB values for the border color
-            total = ne + ns + nt
-            red = ne / total
-            green = ns / total
-            blue = nt / total
-            border_color = (red, green, blue)
+        ab = AnnotationBbox(imagebox, (sp, tm), frameon=False)
+        ax.add_artist(ab)
 
-            ab = AnnotationBbox(imagebox, (1 - tp, tm), frameon=False, bboxprops=dict(edgecolor=border_color, lw=2))
-            ax.add_artist(ab)
-        except IndexError:
-            print(f"Error: Image {img_filename} does not have corresponding data in the CSV file.")
+        # Get ne, ns, nt from csv data based on num value
+        ne, ns, nt = csv_data[num]
+        total = ne + ns + nt
+
+        # Compute RGB color based on ne, ns, nt values
+        red = ne / total
+        green = ns / total
+        blue = nt / total
+        edgecolor = (red, green, blue)
+
+        # Draw a border around the image
+        rect = patches.Rectangle((sp - 0.0825, tm - 0.10), 0.165, 0.205, linewidth=3.2, edgecolor=edgecolor,
+                                 facecolor='none')
+        ax.add_patch(rect)
 
     ax.set_title(f"lm={lm_value}", pad=20, fontsize=14)
     ax.set_xlabel('sp', labelpad=10, fontsize=12)
     ax.set_ylabel('tm', labelpad=10, fontsize=12)
-    ax.set_xticks([0, 0.25, 0.5, 0.75, 1])
-    ax.set_yticks([0, 0.25, 0.5, 0.75, 1])
+
+    # Set ticks and labels for x-axis
+    x_ticks = [0, 0.25, 0.5, 0.75]
+    x_labels = ['0', '0.25', '0.5', '1']
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_labels)
+
+    # Set ticks and labels for y-axis
+    y_ticks = [0, 0.25, 0.5, 0.75]
+    y_labels = ['0', '0.5', '0.75', '1']
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels(y_labels)
+
     ax.tick_params(axis='x', which='major', pad=10)  # Adjust padding of ticks on x-axis
     ax.tick_params(axis='y', which='major', pad=10)  # Adjust padding of ticks on y-axis
-    ax.set_xlim(-0.2, 1.2)  # Expand the x-axis limits to leave some space
-    ax.set_ylim(-0.2, 1.2)  # Expand the y-axis limits to leave some space
+    ax.set_xlim(-0.2, 0.95)  # Expand the x-axis limits to leave some space
+    ax.set_ylim(-0.2, 0.95)  # Expand the y-axis limits to leave some space
+
 
 # Create subplots
 fig, axs = plt.subplots(2, 2, figsize=(12, 12))
 
 # Plot sub-arrays with images
-plot_subarray(axs[0, 0], lm_0, 0)  # Passing lm value for lm_0 sub-array
-plot_subarray(axs[0, 1], lm_025, 0.25)
-plot_subarray(axs[1, 0], lm_05, 0.5)
-plot_subarray(axs[1, 1], lm_1, 1)
+lm_values = [0, 0.25, 1, 0.5]
+positions = [(0, 0), (0, 1), (1, 1), (1, 0)]
+for lm, pos in zip(lm_values, positions):
+    if sub_arrays[lm]:
+        plot_subarray(axs[pos[0], pos[1]], sub_arrays[lm], lm)
 
 # Adjust layout to add space between subplots
-plt.subplots_adjust(wspace=0.75, hspace=0.75)
+plt.subplots_adjust(wspace=0.65, hspace=0.65)
 
 # Set global title
 plt.suptitle('Survey1_10_8')
 
+# Show the plot
 plt.show()
