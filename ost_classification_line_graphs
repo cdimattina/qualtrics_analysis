@@ -1,0 +1,119 @@
+#SORT BY OCCLUSIONS
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the CSV file
+file_path = '/home/cplab4/Downloads/survey_classification_results/classification_results_train_1.csv'
+data = pd.read_csv(file_path)
+
+# Extract relevant columns
+occlusions = data.iloc[:, 0:50]
+shadows = data.iloc[:, 51:101]
+textures = data.iloc[:, 101:151]
+
+
+# Calculate the probabilities of being classified as occlusion
+occlusions_prob = (occlusions == 'Occlusion').mean()
+shadows_prob = (shadows == 'Occlusion').mean()
+textures_prob = (textures == 'Occlusion').mean()
+
+# Sort values by the probability of being classified as each type
+occlusions_prob_sorted = occlusions_prob.sort_values()
+shadows_prob_sorted = shadows_prob.sort_values()
+textures_prob_sorted = textures_prob.sort_values()
+
+# Plotting
+plt.figure(figsize=(14, 6))
+plt.plot(occlusions_prob_sorted.values, label='Occlusions, Q1-50', color='red')
+plt.plot(shadows_prob_sorted.values, label='Shadows, Q51-100', color='green')
+plt.plot(textures_prob_sorted.values, label='Textures, Q101-150', color='blue')
+plt.xlabel('Questions (sorted by occlusion probability)',labelpad=10, fontsize=12)
+plt.ylabel('Probability of being classified as Occlusion', labelpad=10, fontsize=12)
+plt.title('Occlusion Classification Trial #1', pad=20, fontsize=14)
+plt.xticks(ticks=range(len(occlusions_prob_sorted)), labels=range(1, len(occlusions_prob_sorted) + 1))
+plt.xticks(fontsize=10)
+plt.yticks([0,0.2,0.4,0.6,0.8,1.0])
+plt.legend()
+plt.grid(False)
+plt.show()
+
+
+# SORT BY SHADOWS
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the CSV file
+file_path = '/home/cplab4/Downloads/survey_classification_results/classification_results_train_1.csv'
+data = pd.read_csv(file_path)
+
+# Extract relevant columns
+occlusions = data.iloc[:, 0:50]
+shadows = data.iloc[:, 51:101]
+textures = data.iloc[:, 101:151]
+
+
+# Calculate the probabilities of being classified as shadow
+occlusions_prob = (occlusions == 'Shadow').mean()
+shadows_prob = (shadows == 'Shadow').mean()
+textures_prob = (textures == 'Shadow').mean()
+
+# Sort values by the probability of being classified as each type
+occlusions_prob_sorted = occlusions_prob.sort_values()
+shadows_prob_sorted = shadows_prob.sort_values()
+textures_prob_sorted = textures_prob.sort_values()
+
+# Plotting
+plt.figure(figsize=(14, 6))
+plt.plot(occlusions_prob_sorted.values, label='Occlusions, Q1-50', color='red')
+plt.plot(shadows_prob_sorted.values, label='Shadows, Q51-100', color='green')
+plt.plot(textures_prob_sorted.values, label='Textures, Q101-150', color='blue')
+plt.xlabel('Questions (sorted by Shadow probability)', labelpad=10, fontsize=12)
+plt.ylabel('Probability of being classified as Shadow', labelpad=10, fontsize=12)
+plt.title('Shadow Classification Trial #1', pad=20, fontsize=14)
+plt.xticks(ticks=range(len(occlusions_prob_sorted)), labels=range(1, len(occlusions_prob_sorted) + 1))
+plt.xticks(fontsize=10)
+plt.yticks([0,0.2,0.4,0.6,0.8,1.0])
+plt.legend()
+plt.grid(False)
+plt.show()
+
+# SORT BY TEXTURE
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the CSV file
+file_path = '/home/cplab4/Downloads/survey_classification_results/classification_results_train_1.csv'
+data = pd.read_csv(file_path)
+
+# Extract relevant columns
+occlusions = data.iloc[:, 0:50]
+shadows = data.iloc[:, 51:101]
+textures = data.iloc[:, 101:151]
+
+# Calculate the probabilities of being classified as texture
+occlusions_prob = (occlusions == 'Texture').mean()
+shadows_prob = (shadows == 'Texture').mean()
+textures_prob = (textures == 'Texture').mean()
+
+# Sort values by the probability of being classified as each type
+occlusions_prob_sorted = occlusions_prob.sort_values()
+shadows_prob_sorted = shadows_prob.sort_values()
+textures_prob_sorted = textures_prob.sort_values()
+
+# Plotting
+plt.figure(figsize=(14, 6))
+plt.plot(occlusions_prob_sorted.values, label='Occlusions, Q1-50', color='red')
+plt.plot(shadows_prob_sorted.values, label='Shadows, Q51-100', color='green')
+plt.plot(textures_prob_sorted.values, label='Textures, Q101-150', color='blue')
+plt.xlabel('Questions (sorted by Texture probability)', labelpad=10, fontsize=12)
+plt.ylabel('Probability of being classified as Texture', labelpad=10, fontsize=12)
+plt.title('Texture Classification Trial #1', pad=20, fontsize=14)
+plt.xticks(ticks=range(len(occlusions_prob_sorted)), labels=range(1, len(occlusions_prob_sorted) + 1))
+plt.xticks(fontsize=10)
+plt.yticks([0,0.2,0.4,0.6,0.8,1.0])
+plt.legend()
+plt.grid(False)
+plt.show()
